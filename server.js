@@ -1,6 +1,7 @@
 const express = require('express');
 const hbs = require('hbs');
 const fs = require('fs');
+const crud= require('./services/firebase.crud.service');
 
 const port = process.env.PORT || 3000;
 var app = express();
@@ -12,8 +13,14 @@ app.use((req, res, next) => {
   var now = new Date().toString();
   var log = `${now}: ${req.method} ${req.url}`;
 
-  console.log(log);
-  fs.appendFile('server.log', log + '\n');
+  console.log(log,' req ',req.ips);
+
+  fs.appendFileSync('server.log', log + '\n');
+  crud.insert('log',{data:{
+    mensagem:log,
+    ip:req.ip,
+    ips:req.ips.length==0?'no proxy':req.ips
+    }});
   next();
 });
 
@@ -59,4 +66,6 @@ app.get('/bad', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is up on port ${port}`);
+  var now = new Date().toString();
+  crud.insert('log',{data:{mensagem:'Iniciando server',momento:now}});
 });
